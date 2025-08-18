@@ -1,0 +1,89 @@
+package migrations_test
+
+import (
+	"encoding/json"
+	"time"
+
+	"code.cloudfoundry.org/bbs/db/migrations"
+	"code.cloudfoundry.org/bbs/db/sqldb/helpers"
+	"code.cloudfoundry.org/bbs/migration"
+	"code.cloudfoundry.org/clock/fakeclock"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+)
+
+var _ = Describe("Add Placement Tags to Desired LRPs", func() {
+	var (
+		mig migration.Migration
+	)
+
+	BeforeEach(func() {
+		fakeClock = fakeclock.NewFakeClock(time.Now())
+		rawSQLDB.Exec("DROP TABLE domains;")
+		rawSQLDB.Exec("DROP TABLE tasks;")
+		rawSQLDB.Exec("DROP TABLE desired_lrps;")
+		rawSQLDB.Exec("DROP TABLE actual_lrps;")
+
+		mig = migrations.NewAddPlacementTagsToDesiredLRPs()
+	})
+
+	It("appends itself to the migration list", func() {
+		Expect(migrations.AllMigrations()).To(ContainElement(mig))
+	})
+
+	Describe("Version", func() {
+		It("returns the timestamp from which it was created", func() {
+			Expect(mig.Version()).To(BeEquivalentTo(1472757022))
+		})
+	})
+
+	Describe("Up", func() {
+		BeforeEach(func() {
+			initialMigrations := []migration.Migration{
+				migrations.NewInitSQL(),
+				migrations.NewIncreaseRunInfoColumnSize(),
+			}
+
+			for _, m := range initialMigrations {
+				m.SetDBFlavor(flavor)
+				m.SetClock(fakeClock)
+				testUpInTransaction(rawSQLDB, m, logger)
+			}
+
+			mig.SetDBFlavor(flavor)
+			mig.SetClock(fakeClock)
+		})
+
+		It("should add a placement_tags column to desired lrps", func() {
+			testUpInTransaction(rawSQLDB, mig, logger)
+			placementTags := []string{"tag-1"}
+
+			jsonData, err := json.Marshal(placementTags)
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = rawSQLDB.Exec(
+				helpers.RebindForFlavor(
+					`INSERT INTO desired_lrps
+						  (process_guid, domain, placement_tags, log_guid, instances, memory_mb,
+							  disk_mb, rootfs, routes, volume_placement, modification_tag_epoch, run_info)
+						  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					flavor,
+				),
+				"guid", "domain",
+				jsonData,
+				"log guid", 2, 1, 1, "rootfs", "routes", "volumes yo", "1", "run info",
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			var fetchedJSONData string
+			query := helpers.RebindForFlavor("select placement_tags from desired_lrps limit 1", flavor)
+			row := rawSQLDB.QueryRow(query)
+			Expect(row.Scan(&fetchedJSONData)).NotTo(HaveOccurred())
+			Expect(fetchedJSONData).To(BeEquivalentTo(jsonData))
+		})
+
+		It("is idempotent", func() {
+			testIdempotency(rawSQLDB, mig, logger)
+		})
+	})
+})
