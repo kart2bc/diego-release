@@ -36,10 +36,6 @@
 [submodule "src/code.cloudfoundry.org/guardian"]
 	path = src/guardian
 	url = https://github.com/cloudfoundry/guardian
-[submodule "src/code.cloudfoundry.org/ecrhelper"]
-	path = src/code.cloudfoundry.org/ecrhelper
-	url = https://github.com/cloudfoundry/ecrhelper
-	branch = main
 [submodule "src/code.cloudfoundry.org/idmapper"]
 	path = src/idmapper
 	url = https://github.com/cloudfoundry/idmapper
