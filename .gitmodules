@@ -2,10 +2,6 @@
 	path = src/code.cloudfoundry.org/auction
 	url = https://github.com/cloudfoundry/auction
 	branch = main
-[submodule "src/code.cloudfoundry.org/executor"]
-	path = src/code.cloudfoundry.org/executor
-	url = https://github.com/cloudfoundry/executor
-	branch = main
 [submodule "src/code.cloudfoundry.org/healthcheck"]
 	path = src/code.cloudfoundry.org/healthcheck
 	url = https://github.com/cloudfoundry/healthcheck
