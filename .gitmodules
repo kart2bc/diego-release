@@ -14,10 +14,6 @@
 	path = src/code.cloudfoundry.org/vizzini
 	url = https://github.com/cloudfoundry/vizzini
 	branch = main
-[submodule "src/code.cloudfoundry.org/dockerapplifecycle"]
-	path = src/code.cloudfoundry.org/dockerapplifecycle
-	url = https://github.com/cloudfoundry/dockerapplifecycle
-	branch = main
 [submodule "src/code.cloudfoundry.org/fileserver"]
 	path = src/code.cloudfoundry.org/fileserver
 	url = https://github.com/cloudfoundry/fileserver
