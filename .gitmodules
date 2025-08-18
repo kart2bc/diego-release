@@ -10,10 +10,6 @@
 	path = src/code.cloudfoundry.org/inigo
 	url = https://github.com/cloudfoundry/inigo
 	branch = main
-[submodule "src/code.cloudfoundry.org/rep"]
-	path = src/code.cloudfoundry.org/rep
-	url = https://github.com/cloudfoundry/rep
-	branch = main
 [submodule "src/code.cloudfoundry.org/vizzini"]
 	path = src/code.cloudfoundry.org/vizzini
 	url = https://github.com/cloudfoundry/vizzini
