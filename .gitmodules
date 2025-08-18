@@ -33,10 +33,6 @@
 	path = src/code.cloudfoundry.org/routing-info
 	url = https://github.com/cloudfoundry-incubator/routing-info
 	branch = main
-[submodule "src/code.cloudfoundry.org/routing-api"]
-	path = src/code.cloudfoundry.org/routing-api
-	url = https://github.com/cloudfoundry-incubator/routing-api
-	branch = main
 [submodule "src/code.cloudfoundry.org/guardian"]
 	path = src/guardian
 	url = https://github.com/cloudfoundry/guardian
