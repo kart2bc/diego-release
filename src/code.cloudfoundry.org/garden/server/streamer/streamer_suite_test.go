@@ -1,0 +1,13 @@
+package streamer_test
+
+import (
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+
+	"testing"
+)
+
+func TestStreamer(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Streamer Suite")
+}

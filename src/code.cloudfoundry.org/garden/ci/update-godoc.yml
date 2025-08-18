@@ -1,0 +1,8 @@
+---
+platform: linux
+
+inputs:
+- name: garden
+
+run:
+  path: garden/scripts/update-godoc.sh
