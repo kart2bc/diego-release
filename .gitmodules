@@ -2,10 +2,6 @@
 	path = src/code.cloudfoundry.org/auction
 	url = https://github.com/cloudfoundry/auction
 	branch = main
-[submodule "src/code.cloudfoundry.org/bbs"]
-	path = src/code.cloudfoundry.org/bbs
-	url = https://github.com/cloudfoundry/bbs
-	branch = main
 [submodule "src/code.cloudfoundry.org/cacheddownloader"]
 	path = src/code.cloudfoundry.org/cacheddownloader
 	url = https://github.com/cloudfoundry/cacheddownloader
