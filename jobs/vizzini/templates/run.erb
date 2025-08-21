@@ -25,7 +25,7 @@ ginkgo \
   -nodes=<%= properties.vizzini.nodes %> \
   -v=<%= properties.vizzini.verbose %> \
   --randomize-all \
-  --flake-attempts=2 \
+  --flake-attempts=<%= properties.vizzini.flake_attempts %> \
   --show-node-events \
   -trace \
   --keep-going \

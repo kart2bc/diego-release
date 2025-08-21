@@ -44,6 +44,9 @@ properties:
   vizzini.nodes:
     description: The number of nodes to run the tests with
     default: 4
+  vizzini.flake_attempts:
+    description: The number of flake attempts when a test fails
+    default: 4
   vizzini.verbose:
     description: Run tests in verbose mode
     default: false
