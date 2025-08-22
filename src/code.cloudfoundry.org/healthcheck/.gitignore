@@ -1,3 +1,0 @@
-cmd/healthcheck/healthcheck
-*.test
-*.coverprofile
