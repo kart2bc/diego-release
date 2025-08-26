@@ -14,10 +14,6 @@
 	path = src/code.cloudfoundry.org/cacheddownloader
 	url = https://github.com/cloudfoundry/cacheddownloader
 	branch = main
-[submodule "src/code.cloudfoundry.org/executor"]
-	path = src/code.cloudfoundry.org/executor
-	url = https://github.com/cloudfoundry/executor
-	branch = main
 [submodule "src/code.cloudfoundry.org/healthcheck"]
 	path = src/code.cloudfoundry.org/healthcheck
 	url = https://github.com/cloudfoundry/healthcheck
