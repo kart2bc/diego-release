@@ -141,19 +141,24 @@ var _ = BeforeEach(func() {
 })
 
 var _ = AfterEach(func() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(GinkgoWriter, "inigo_announcement_server panic: %v", r)
+		}
+		destroyContainerErrors := helpers.CleanupGarden(gardenClient)
+
+		helpers.StopProcesses(bbsProcess)
+		helpers.StopProcesses(gardenProcess)
+		helpers.StopProcesses(plumbing)
+
+		Expect(destroyContainerErrors).To(
+			BeEmpty(),
+			"%d containers failed to be destroyed!",
+			len(destroyContainerErrors),
+		)
+	}()
 	inigo_announcement_server.Stop()
 
-	destroyContainerErrors := helpers.CleanupGarden(gardenClient)
-
-	helpers.StopProcesses(bbsProcess)
-	helpers.StopProcesses(gardenProcess)
-	helpers.StopProcesses(plumbing)
-
-	Expect(destroyContainerErrors).To(
-		BeEmpty(),
-		"%d containers failed to be destroyed!",
-		len(destroyContainerErrors),
-	)
 })
 
 func TestCell(t *testing.T) {
