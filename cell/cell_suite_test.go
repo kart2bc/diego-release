@@ -128,6 +128,7 @@ var _ = BeforeEach(func() {
 	gardenRunner = componentMaker.Garden()
 	gardenProcess = ginkgomon.Invoke(gardenRunner)
 	bbsRunner = componentMaker.BBS()
+	bbsRunner.StartCheckTimeout = 2 * time.Minute
 	bbsProcess = ginkgomon.Invoke(bbsRunner)
 
 	lgr = lager.NewLogger("test")
