@@ -9,8 +9,19 @@ import (
 	"path"
 	"path/filepath"
 
+	loggingclient "code.cloudfoundry.org/diego-logging-client"
+
+	auctioneerconfig "code.cloudfoundry.org/auctioneer/cmd/auctioneer/config"
+	bbsconfig "code.cloudfoundry.org/bbs/cmd/bbs/config"
+	fileserverconfig "code.cloudfoundry.org/fileserver/cmd/file-server/config"
+	repconfig "code.cloudfoundry.org/rep/cmd/rep/config"
+	routeemitterconfig "code.cloudfoundry.org/route-emitter/cmd/route-emitter/config"
+
+	"code.cloudfoundry.org/bbs/test_helpers"
+	"code.cloudfoundry.org/diego-logging-client/testhelpers"
 	"code.cloudfoundry.org/dockerdriver"
 	"code.cloudfoundry.org/garden"
+	"code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2"
 	"code.cloudfoundry.org/inigo/helpers"
 	"code.cloudfoundry.org/inigo/helpers/certauthority"
 	"code.cloudfoundry.org/inigo/helpers/portauthority"
@@ -20,6 +31,7 @@ import (
 	"code.cloudfoundry.org/localip"
 	"code.cloudfoundry.org/volman"
 	. "github.com/onsi/ginkgo/v2"
+
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	"github.com/tedsuo/ifrit"
@@ -44,6 +56,18 @@ var (
 
 	driverPluginsPath string
 	certDepot         string
+
+	testMetricsChan    chan *loggregator_v2.Envelope
+	signalMetricsChan  chan struct{}
+	metronIngressSetup *test_helpers.MetronIngressSetup
+	testIngressServer  *testhelpers.TestIngressServer
+
+	modifyFunAuctioneerLoggregatorConfig                    func(cfg *auctioneerconfig.AuctioneerConfig)
+	modifyFunRouteEmitterLoggregatorConfig                  func(cfg *routeemitterconfig.RouteEmitterConfig)
+	modifyFunRepLoggregatorConfig                           func(cfg *repconfig.RepConfig)
+	modifyFunFileServerLoggregatorConfig                    func(cfg *fileserverconfig.FileServerConfig)
+	modifyFuncBBSLoggregatorConfig                          func(cfg *bbsconfig.BBSConfig)
+	metronCAFile, metronServerCertFile, metronServerKeyFile string
 )
 
 var _ = SynchronizedBeforeSuite(func() []byte {
@@ -108,6 +132,39 @@ var _ = AfterSuite(func() {
 
 var _ = BeforeEach(func() {
 	logger = lagertest.NewTestLogger("volman-inigo-suite")
+
+	fixturesPath := "../fixtures/certs"
+
+	var err error
+	metronCAFile = filepath.Join(fixturesPath, "metron", "CA.crt")
+	metronServerCertFile = filepath.Join(fixturesPath, "metron", "metron.crt")
+	metronServerKeyFile = filepath.Join(fixturesPath, "metron", "metron.key")
+	testIngressServer, err = testhelpers.NewTestIngressServer(metronServerCertFile, metronServerKeyFile, metronCAFile)
+	Expect(err).NotTo(HaveOccurred())
+	receiversChan := testIngressServer.Receivers()
+	testIngressServer.Start()
+
+	testMetricsChan, signalMetricsChan = testhelpers.TestMetricChan(receiversChan)
+
+	modifyFuncBBSLoggregatorConfig = func(cfg *bbsconfig.BBSConfig) {
+		cfg.LoggregatorConfig = setupMetronConfig(cfg.LoggregatorConfig)
+	}
+
+	modifyFunAuctioneerLoggregatorConfig = func(cfg *auctioneerconfig.AuctioneerConfig) {
+		cfg.LoggregatorConfig = setupMetronConfig(cfg.LoggregatorConfig)
+	}
+
+	modifyFunRouteEmitterLoggregatorConfig = func(cfg *routeemitterconfig.RouteEmitterConfig) {
+		cfg.LoggregatorConfig = setupMetronConfig(cfg.LoggregatorConfig)
+	}
+
+	modifyFunRepLoggregatorConfig = func(cfg *repconfig.RepConfig) {
+		cfg.LoggregatorConfig = setupMetronConfig(cfg.LoggregatorConfig)
+	}
+
+	modifyFunFileServerLoggregatorConfig = func(cfg *fileserverconfig.FileServerConfig) {
+		cfg.LoggregatorConfig = setupMetronConfig(cfg.LoggregatorConfig)
+	}
 
 	gardenProcess = ginkgomon.Invoke(componentMaker.Garden())
 	gardenClient = componentMaker.GardenClient()
@@ -189,4 +246,12 @@ func CompileTestedExecutables() world.BuiltExecutables {
 	Expect(err).NotTo(HaveOccurred())
 
 	return builtExecutables
+}
+
+func setupMetronConfig(cfg loggingclient.Config) loggingclient.Config {
+	cfg.APIPort, _ = testIngressServer.Port()
+	cfg.CACertPath = metronCAFile
+	cfg.CertPath = metronServerCertFile
+	cfg.KeyPath = metronServerKeyFile
+	return cfg
 }

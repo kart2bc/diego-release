@@ -55,19 +55,20 @@ var _ = Describe("Evacuation", func() {
 		}
 		processGuid = helpers.GenerateGuid()
 
-		fileServer, fileServerStaticDir := componentMaker.FileServer()
+		fileServer, fileServerStaticDir := componentMaker.FileServer(modifyFunFileServerLoggregatorConfig)
 
 		By("restarting the bbs with smaller convergeRepeatInterval")
 		ginkgomon.Interrupt(bbsProcess)
 		bbsProcess = ginkgomon.Invoke(componentMaker.BBS(
 			overrideConvergenceRepeatInterval,
+			modifyFuncBBSLoggregatorConfig,
 		))
 
 		ifritRuntime = ginkgomon.Invoke(grouper.NewParallel(os.Kill, grouper.Members{
 			{Name: "router", Runner: componentMaker.Router()},
 			{Name: "file-server", Runner: fileServer},
-			{Name: "auctioneer", Runner: componentMaker.Auctioneer()},
-			{Name: "route-emitter", Runner: componentMaker.RouteEmitter()},
+			{Name: "auctioneer", Runner: componentMaker.Auctioneer(modifyFunAuctioneerLoggregatorConfig)},
+			{Name: "route-emitter", Runner: componentMaker.RouteEmitter(modifyFunRouteEmitterLoggregatorConfig)},
 		}))
 
 		cellAID = "cell-a"
@@ -103,8 +104,7 @@ var _ = Describe("Evacuation", func() {
 				config.ListenAddr = cellARepAddr
 				config.ListenAddrSecurable = cellARepSecureAddr
 				config.EvacuationTimeout = durationjson.Duration(30 * time.Second)
-			},
-		)
+			}, modifyFunRepLoggregatorConfig)
 
 		cellBRepRunner = componentMaker.RepN(1,
 			func(config *repconfig.RepConfig) {
@@ -112,7 +112,7 @@ var _ = Describe("Evacuation", func() {
 				config.ListenAddr = cellBRepAddr
 				config.ListenAddrSecurable = cellBRepSecureAddr
 				config.EvacuationTimeout = durationjson.Duration(30 * time.Second)
-			})
+			}, modifyFunRepLoggregatorConfig)
 
 		test_helper.CreateZipArchive(
 			filepath.Join(fileServerStaticDir, "lrp.zip"),
