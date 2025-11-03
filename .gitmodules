@@ -1,6 +1,6 @@
 [submodule "src/code.cloudfoundry.org/bbs"]
 	path = src/code.cloudfoundry.org/bbs
-	url = https://github.com/cloudfoundry/bbs
+	url = https://github.com/kart2bc/bbs
 	branch = main
 [submodule "src/code.cloudfoundry.org/cacheddownloader"]
 	path = src/code.cloudfoundry.org/cacheddownloader
