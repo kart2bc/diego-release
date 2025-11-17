@@ -20,6 +20,7 @@ var _ = Describe("LRPs", func() {
 	BeforeEach(func() {
 		url = "http://" + RouteForGuid(guid) + "/env?json=true"
 		lrp = DesiredLRPWithGuid(guid)
+		AddSpaceOrgInfo(lrp)
 	})
 
 	Describe("Desiring LRPs", func() {

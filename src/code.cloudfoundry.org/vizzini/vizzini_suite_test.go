@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"code.cloudfoundry.org/bbs"
+	"code.cloudfoundry.org/bbs/models"
 	"code.cloudfoundry.org/lager/v3"
 	"code.cloudfoundry.org/lager/v3/lagertest"
 	vizziniconfig "code.cloudfoundry.org/vizzini/config"
@@ -134,4 +135,12 @@ func initializeBBSClient() bbs.InternalClient {
 	bbsClient, err := bbs.NewSecureSkipVerifyClient(config.BBSAddress, config.BBSClientCertPath, config.BBSClientKeyPath, 0, 0)
 	Expect(err).NotTo(HaveOccurred())
 	return bbsClient
+}
+
+func AddSpaceOrgInfo(lrp *models.DesiredLRP) {
+	if lrp.MetricTags == nil {
+		lrp.MetricTags = make(map[string]*models.MetricTagValue)
+	}
+	lrp.MetricTags["space_id"] = &models.MetricTagValue{Static: "vizzini_dummy_space"}
+	lrp.MetricTags["organization_id"] = &models.MetricTagValue{Static: "vizzing_dummy_org"}
 }
